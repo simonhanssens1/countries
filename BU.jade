@@ -1,0 +1,123 @@
+			$(document).ready(function(){
+			socket.emit('doc ready');
+			});
+			var i = 0;
+
+			var socket = io();
+			$('#game').submit(function(){
+			var user = "#{user.username}";
+			var data = [];
+			data[0] = $('#m').val();
+			data[1] = user;
+			socket.emit('game message', data);
+			$('#m').val('');
+			return false;
+			});
+
+			socket.on('game message', function(data){
+			if(data[1]=="#{user.username}"){
+			$('#messages').append($('<li class="list-group-item me">').text(data[1] + ": " + data[0]));
+			}else{
+			$('#messages').append($('<li class="list-group-item">').text(data[1] + ": " + data[0]));
+			}			
+			$( "ul" ).scrollTop( 150000000 );
+			});
+
+			socket.on('game finish message', function(msg){
+			$('#messages').append($('<li class="list-group-item admin-msg">').text(msg));
+			//setTimeout(function() {
+			//$('#messages').empty();
+			//}, 3000);			
+			});
+
+			socket.on('new country message', function(msg){			
+			$("#letters").empty();	
+			$("#letters").append(msg);		
+			});
+
+			socket.on('start message', function(msg){			
+			$('#messages').append($('<li class="list-group-item">').text("Veel plezier!"));	
+			});
+
+			//- socket.on('add winner', function(msg){	
+			//- if ($('#spelers li').length == 0){
+			//- 	$('#spelers').append($('<li class="list-group-item">').text(msg + " - " + 1));
+
+			//- } else{
+			//- 	$("#spelers li").each(function(){
+			//- 	//- $('#spelers').append($('<li class="list-group-item">').text($(this).text()));
+			//- 	var parts = $(this).text().split(' - ');
+			//- 	if(parts[0] == msg){
+			//- 	parts[1]++;
+				
+			//- 	$(this).text(msg + " - " + parts[1]);
+				
+			//- 	}else{
+			//- 	$('#spelers').append($('<li class="list-group-item">').text("#{user.username}"));
+			//- 	}
+			//- 	})
+			//- }				
+				
+			//- });
+
+			var socketChat = io();
+			$('#chat').submit(function(){
+			var user = "#{user.username}";
+			var data = [];
+			data[0] = $('#mChat').val();
+			data[1] = user;
+			socketChat.emit('chat message', data);
+			$('#mChat').val('');
+			return false;
+			});
+
+			socketChat.on('chat message', function(data){
+			if(data[1]=="#{user.username}"){
+			$('#messagesChat').append($('<li class="list-group-item chatMe">').text(data[1] + ": " + data[0]));
+			}else{
+			$('#messagesChat').append($('<li class="list-group-item chat">').text(data[1] + ": " + data[0]));
+			}	
+			$( "ul" ).scrollTop( 150000000 );
+			});	
+
+			socketChat.on('all users', function(users){		
+
+			$("#spelers").empty();	
+			users.sort(function(a,b) {return (a.highscore - b.highscore) ? 1 : ((b.highscore - a.highscore) ? -1 : 0);} );
+			users.forEach(function(user){
+			$('#spelers').append($('<li class="list-spelers">').text(user.username + " - " + user.highscore));		
+			});
+			$( "ul" ).scrollTop( 150000000 );
+
+			});	
+
+			socket.on('plaats letters', function(msg){			
+			$("#letters").empty();	
+			$("#letters").append(msg);		
+			});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						//- var socket = io();
+			//- $('#game').submit(function(){
+			//- var user = "#{user.username}";
+			//- var data = [];
+			//- data[0] = $('#m').val();
+			//- data[1] = user;
+			//- socket.emit('game message', data);
+			//- $('#m').val('');
+			//- return false;
+			//- });

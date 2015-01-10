@@ -1,0 +1,168 @@
+//- extends layout
+
+//- block content
+	a(href="/auth/facebook") Login with Facebook
+	//- div.container
+	//- 	div.row
+	//- 		div.col-sm-6.col-md-4.col-md-offset-4
+	//- 			h1.text-center.login-title Sign in to our Passport app
+					
+	//- 				div.account-wall
+	//- 					img(class='profile-img', src='https://lh5.googleusercontent.com/-b0-k99FZlyE/AAAAAAAAAAI/AAAAAAAAAAA/eu7opA4byxI/photo.jpg?sz=120')
+	//- 					form(class='form-signin', action='/login', method='POST')
+	//- 						input(type='text', name='username' class='form-control', placeholder='Email',required, autofocus)
+	//- 						input(type='password', name='password' class='form-control', placeholder='Password', required)
+	//- 						button(class='btn btn-lg btn-primary btn-block', type='submit') Sign in
+	//- 						span.clearfix
+	//- 				a(href='/signup', class='text-center new-account') Create an account
+	//- 				#message
+	//- 				if message
+	//- 					h1.text-center.error-message #{message}
+extends layout
+
+block content
+	//- div.container
+	//- 	div.row
+	//- 		div.col-sm-6.col-md-4.col-md-offset-4
+	//- 			#user
+	//- 				h1.text-center.login-title Welcome #{user.firstName}. Check your details below:
+	//- 					div.signup-wall
+	//- 						ul.user-details
+	//- 							li Username ---> #{user.username}
+	//- 							li Email    ---> #{user.email}
+	//- 							li First Name ---> #{user.firstName} 
+	//- 							li Last Name ---> #{user.lastName}
+	//- 					a(href='/signout', class='text-center new-account') Sign Out
+
+	div.header
+		#user
+			img.navImg(src='../images/nav.png')
+			span.glyphicon.glyphicon-user.user  
+			a(href="/auth/facebook") Login with Facebook
+
+	div.page
+		div.left
+			h3 Het spel
+			h4#letters Zoek het land met volgende letters
+			ul(action='')#messages
+			form#game
+				div.input-group
+					input#m.form-control
+					span.input-group-btn
+						button.btn.btn-default zend
+		div.right
+			h3 Hoe spelen
+			h4 Meld je aan
+			h4 Zoek zo snel mogelijk het juiste land, let op: in het Engels
+			h4 Met de chatfuncties kan je praten met alle actieve spelers
+			h3 Spelers top 10
+			ul#spelers
+
+	div.chat
+		p#chatTitle Verberg chat
+		ul(action='')#messagesChat
+		form#chat
+			div.input-group
+				input#mChat.form-control
+				span.input-group-btn
+					button.btn.btn-default zend
+
+
+		script(src='https://cdn.socket.io/socket.io-1.2.0.js')
+		script(src='http://code.jquery.com/jquery-1.11.1.js')
+		script(src='../scripts/script.js')
+
+		script.
+
+			var currentUser;
+
+
+
+			$(document).ready(function(){
+			socket.emit('doc ready');
+			});
+			var i = 0;
+
+			var socket = io();
+			$('#game').submit(function(){
+			var user = "";
+			var data = [];
+			data[0] = $('#m').val();
+			data[1] = currentUser;
+			socket.emit('game message', data);
+			$('#m').val('');
+			return false;
+			});
+
+			socket.on('game message', function(data){
+			if(data[1].username==undefined){
+			$('#messages').append($('<li class="list-group-item me">').text(data[1] + ": " + data[0]));
+			}else{
+			$('#messages').append($('<li class="list-group-item">').text(data[1] + ": " + data[0]));
+			}			
+			$( "ul" ).scrollTop( 150000000 );
+			});
+
+			socket.on('game finish message', function(msg){
+			$('#messages').append($('<li class="list-group-item admin-msg">').text(msg));
+			//setTimeout(function() {
+			//$('#messages').empty();
+			//}, 3000);			
+			});
+
+			socket.on('new country message', function(msg){			
+			$("#letters").empty();	
+			$("#letters").append(msg);		
+			});
+
+			socket.on('start message', function(msg){			
+			$('#messages').append($('<li class="list-group-item">').text("Veel plezier!"));	
+			});
+
+
+
+			socket.on('zet user', function(msg){	
+			currentUser = msg;
+			$(".user").empty();
+			//- if(!currentUser == undefined){
+			$('.user').append("Welcome," + currentUser);	
+			//- }else{
+			//- $('.user').append("Meld je aan");	
+			//- }			
+			});
+
+			var socketChat = io();
+			$('#chat').submit(function(){
+			var user = "";
+			var data = [];
+			data[0] = $('#mChat').val();
+			data[1] = currentUser;
+			socketChat.emit('chat message', data);
+			$('#mChat').val('');
+			return false;
+			});
+
+			socketChat.on('chat message', function(data){
+			if(data[1]==""){
+			$('#messagesChat').append($('<li class="list-group-item chatMe">').text(data[1] + ": " + data[0]));
+			}else{
+			$('#messagesChat').append($('<li class="list-group-item chat">').text(data[1] + ": " + data[0]));
+			}	
+			$( "ul" ).scrollTop( 150000000 );
+			});	
+
+			socketChat.on('all users', function(users){		
+
+			$("#spelers").empty();	
+			users.sort(function(a,b) {return (a.highscore - b.highscore) ? 1 : ((b.highscore - a.highscore) ? -1 : 0);} );
+			users.forEach(function(user){
+			$('#spelers').append($('<li class="list-spelers">').text(user.username + " - " + user.highscore));		
+			});
+			$( "ul" ).scrollTop( 150000000 );
+
+			});	
+
+			socket.on('plaats letters', function(msg){			
+			$("#letters").empty();	
+			$("#letters").append(msg);		
+			});
